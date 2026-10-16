@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heritage Story Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3ead7; --paper:#fbf6ea; --ink:#2b2118; --muted:#7a6a55; --line:#e2d5bb;
+  --accent:#9a4a1c; --accent-ink:#fff8ef;
+  --record:#2f5d7c; --oral:#8a4b8f; --mixed:#4f7a3a; --dramatized:#8b7d6b;
+  --shadow:0 1px 2px rgba(60,40,10,.08),0 8px 24px rgba(60,40,10,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16120e; --paper:#211b15; --ink:#efe5d4; --muted:#a8977f; --line:#3a3027;
+    --accent:#e08a4f; --accent-ink:#1b130c;
+    --record:#7fb2d4; --oral:#d29ad6; --mixed:#9cc77f; --dramatized:#b3a690;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16120e; --paper:#211b15; --ink:#efe5d4; --muted:#a8977f; --line:#3a3027;
+  --accent:#e08a4f; --accent-ink:#1b130c;
+  --record:#7fb2d4; --oral:#d29ad6; --mixed:#9cc77f; --dramatized:#b3a690;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:17px/1.6 "Source Serif 4","Noto Serif Devanagari",Georgia,serif;padding:24px 16px 64px}
+.wrap{max-width:720px;margin:0 auto}
+header{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:20px}
+h1{font-size:1.6rem;line-height:1.25;margin:0 0 4px;font-weight:600}
+.logline{color:var(--muted);font-style:italic;margin:0}
+select,button{font:inherit;color:inherit}
+select{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.trail{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;font-size:.8rem;color:var(--muted)}
+.trail span{padding:2px 8px;border:1px solid var(--line);border-radius:999px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:22px 22px 18px}
+.node-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+h2{font-size:1.25rem;margin:0}
+.badge{font:600 .72rem/1 system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;padding:5px 8px;border-radius:6px;border:1px solid currentColor}
+.b-record{color:var(--record)} .b-oral{color:var(--oral)} .b-mixed{color:var(--mixed)} .b-dramatized{color:var(--dramatized)}
+.narr{font-size:1.12rem;margin:14px 0 16px;white-space:pre-wrap}
+audio{width:100%;margin:2px 0 14px}
+.choices{display:grid;gap:10px}
+.choice{display:block;width:100%;text-align:left;padding:12px 14px;border-radius:10px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;transition:background .15s,color .15s}
+.choice:hover,.choice:focus-visible{background:var(--accent);color:var(--accent-ink);outline:none}
+.end{border-top:1px dashed var(--line);padding-top:14px;margin-top:4px;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.btn{padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);cursor:pointer}
+details{margin-top:18px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 16px}
+summary{cursor:pointer;font-weight:600}
+.ref{border-left:3px solid var(--line);padding:6px 0 6px 12px;margin:12px 0}
+.ref.record{border-color:var(--record)} .ref.oral{border-color:var(--oral)}
+.ref .meta{font:.78rem/1.4 system-ui,sans-serif;color:var(--muted);margin-bottom:4px}
+.ref .q{font-size:.98rem}
+.ref button{margin-top:6px;font:.8rem system-ui,sans-serif;padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);cursor:pointer}
+.scan{max-width:100%;border-radius:8px;border:1px solid var(--line);margin-top:6px}
+.dis{margin:10px 0}
+.dis h4{margin:0 0 6px}
+.dis li{margin:4px 0}
+.warn{font:.8rem system-ui,sans-serif;color:var(--muted);margin-top:14px}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+footer{margin-top:28px;font:.78rem system-ui,sans-serif;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 id="title">…</h1>
+      <p class="logline" id="logline"></p>
+    </div>
+    <div class="row" style="margin:0">
+      <select id="lang" aria-label="Language"></select>
+      <button class="btn" id="theme" aria-label="Toggle light or dark theme">Theme</button>
+    </div>
+  </header>
+
+  <div class="trail" id="trail" aria-label="Your path"></div>
+
+  <main class="card" id="card" aria-live="polite">
+    <div class="node-head">
+      <h2 id="ntitle"></h2>
+      <span class="badge" id="basis"></span>
+    </div>
+    <p class="narr" id="narr"></p>
+    <audio id="audio" controls preload="none" hidden></audio>
+    <div class="choices" id="choices"></div>
+    <div id="ending" class="end" hidden>
+      <div id="endtext"></div>
+      <div class="row">
+        <button class="btn" id="restart">↺ Start again</button>
+      </div>
+    </div>
+  </main>
+
+  <details id="srcbox">
+    <summary>Sources for this scene</summary>
+    <div id="refs"></div>
+  </details>
+
+  <details id="disbox">
+    <summary>Where the sources disagree</summary>
+    <div id="dis"></div>
+  </details>
+
+  <div class="legend">
+    <span class="badge b-record">record</span>
+    <span class="badge b-oral">oral</span>
+    <span class="badge b-mixed">mixed</span>
+    <span class="badge b-dramatized">dramatized</span>
+  </div>
+  <div class="warn" id="warn"></div>
+  <footer>Built with Sarvam AI — Vision · Saaras · Sarvam-105B · Translate · Bulbul</footer>
+</div>
+
+<audio id="srcAudio" hidden></audio>
+
+<script>
+const EMBEDDED = /*__STORY__*/null;
+const BASIS_LABEL = {record:"Written record", oral:"Oral testimony", mixed:"Record + oral", dramatized:"Dramatized"};
+let S, lang, path = [];
+const $ = id => document.getElementById(id);
+
+function store(k, v){ try{ v===undefined ? null : localStorage.setItem(k, v); return localStorage.getItem(k);}catch(e){return null} }
+
+async function load(){
+  S = EMBEDDED || await (await fetch("story.json")).json();
+  const sel = $("lang");
+  S.languages.forEach(l => { const o = document.createElement("option"); o.value = l; o.textContent = l; sel.appendChild(o); });
+  lang = S.languages.includes(store("hs-lang")) ? store("hs-lang") : S.story_language;
+  sel.value = lang;
+  sel.onchange = () => { lang = sel.value; store("hs-lang", lang); render(path[path.length-1], false); };
+  $("restart").onclick = () => { path = []; go(S.start); };
+  $("theme").onclick = () => {
+    const r = document.documentElement, dark = matchMedia("(prefers-color-scheme: dark)").matches;
+    const cur = r.dataset.theme || (dark ? "dark" : "light");
+    r.dataset.theme = cur === "dark" ? "light" : "dark";
+  };
+  if (S.warnings && S.warnings.length) $("warn").textContent = "Validator notes: " + S.warnings.join(" · ");
+  renderDisagreements();
+  go(S.start);
+}
+
+function go(id){ path.push(id); render(id, true); }
+
+function render(id, autoplay){
+  const T = S.text[lang], node = T.nodes[id], g = S.graph[id];
+  $("title").textContent = T.title; document.title = T.title;
+  $("logline").textContent = T.logline;
+  $("ntitle").textContent = node.title;
+  const b = $("basis"); b.className = "badge b-" + g.basis; b.textContent = BASIS_LABEL[g.basis] || g.basis;
+  $("narr").textContent = node.narration;
+
+  // trail
+  const tr = $("trail"); tr.innerHTML = "";
+  path.forEach(p => { const s = document.createElement("span"); s.textContent = S.text[lang].nodes[p].title; tr.appendChild(s); });
+
+  // audio
+  const a = $("audio"), src = (S.audio[lang] || {})[id];
+  if (src){ a.hidden = false; a.src = src; if (autoplay) a.play().catch(()=>{}); }
+  else { a.hidden = true; a.removeAttribute("src"); }
+
+  // choices / ending
+  const ch = $("choices"); ch.innerHTML = "";
+  g.to.forEach((to, i) => {
+    const btn = document.createElement("button");
+    btn.className = "choice"; btn.textContent = node.choices[i] || "→";
+    btn.onclick = () => { a.pause(); go(to); window.scrollTo({top:0, behavior:"smooth"}); };
+    ch.appendChild(btn);
+  });
+  $("ending").hidden = !g.ending;
+  if (g.ending) $("endtext").textContent = `You reached an ending after ${path.length} scenes.`;
+
+  renderRefs(g.refs);
+}
+
+function segIndex(){
+  if (segIndex.m) return segIndex.m;
+  const m = {};
+  S.sources.forEach(s => s.segments.forEach(seg => m[seg.id] = {seg, src:s}));
+  return segIndex.m = m;
+}
+
+function renderRefs(refs){
+  const box = $("refs"); box.innerHTML = "";
+  $("srcbox").hidden = !refs.length;
+  refs.forEach(r => {
+    const hit = segIndex()[r]; if (!hit) return;
+    const {seg, src} = hit;
+    const d = document.createElement("div"); d.className = "ref " + src.kind;
+    const meta = document.createElement("div"); meta.className = "meta";
+    meta.textContent = `${r} · ${src.kind === "oral" ? "Oral" : "Record"} · ${src.title}` +
+      (seg.speaker ? ` · ${seg.speaker} · ${seg.start}s–${seg.end}s` : "");
+    const q = document.createElement("div"); q.className = "q"; q.textContent = "“" + seg.text + "”";
+    d.append(meta, q);
+    if (src.kind === "oral"){
+      const btn = document.createElement("button"); btn.textContent = "▶ Hear the original";
+      btn.onclick = () => playClip(src.file, seg.start, seg.end); d.appendChild(btn);
+    } else if (/\.(png|jpe?g)$/i.test(src.file)){
+      const btn = document.createElement("button"); btn.textContent = "View the scan";
+      btn.onclick = () => { const img = document.createElement("img"); img.className = "scan"; img.src = src.file; img.alt = src.title; btn.replaceWith(img); };
+      d.appendChild(btn);
+    }
+    box.appendChild(d);
+  });
+}
+
+let clipTimer;
+function playClip(file, start, end){
+  const a = $("srcAudio"); $("audio").pause();
+  if (!a.src.endsWith(file)) a.src = file;
+  a.currentTime = start; a.play().catch(()=>{});
+  clearInterval(clipTimer);
+  clipTimer = setInterval(() => { if (a.currentTime >= end){ a.pause(); clearInterval(clipTimer);} }, 100);
+}
+
+function renderDisagreements(){
+  const box = $("dis"), list = (S.facts && S.facts.disagreements) || [];
+  $("disbox").hidden = !list.length;
+  list.forEach(dg => {
+    const div = document.createElement("div"); div.className = "dis";
+    const h = document.createElement("h4"); h.textContent = dg.topic;
+    const ul = document.createElement("ul");
+    dg.versions.forEach(v => {
+      const li = document.createElement("li");
+      li.textContent = `${v.basis === "oral" ? "Oral" : "Record"} (${v.refs.join(", ")}): ${v.claim}`;
+      ul.appendChild(li);
+    });
+    div.append(h, ul); box.appendChild(div);
+  });
+}
+
+load();
+</script>
+</body>
+</html>
